@@ -38,5 +38,5 @@ Infrastructure-as-code (IAC) that automates the process of creating a secured an
 
 **Steps**
 1. Clone the git repository.
-2. There is one components to standing up our environment in AWS: infra.yml incase of single stack and root-stack.yml incase of multiple stack. Infrastructure are the VPCs, gateways, subnets, and routing. Servers are the compute resources, load-balancers, and auto-scaling.
+2. There is one components to standing up our environment in AWS: `infra.yml` incase of single stack and `root-stack.yml` incase of multiple stack. Infrastructure are the VPCs, gateways, subnets, and routing. Servers are the compute resources, load-balancers, and auto-scaling.
 

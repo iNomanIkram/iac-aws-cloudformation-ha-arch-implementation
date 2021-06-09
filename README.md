@@ -1,4 +1,4 @@
-# Deploy a High-Availability Web Application Using AWS CloudFormation - IaaS 
+# Deploy a High-Availability Flask Application Using AWS CloudFormation - IaaS 
 
 
 Infrastructure-as-code (IAC) that automates the process of creating a secured and high-availability environment and deploying an application (python flask app) on ec2 instance. The script contains all the configurations needed for a repeatable process so that the infrastructure can be discarded and recreated at will multiple times.

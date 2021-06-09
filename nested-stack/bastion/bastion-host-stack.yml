@@ -1,0 +1,57 @@
+Description: >
+    NomanIkram-CfnAssignment-Nested-Stack-BastionHost-Configuration
+
+Parameters:
+  ProjectName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: "NomanIkram-Cfn-Assignment"
+
+  Environnment:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: "Dev"
+
+
+  UbuntuAMI:
+    Description: AMI used for the Setting up MySql
+    Type: String
+    Default: "ami-0ee02acd56a52998e"
+
+  EC2InstanceType:
+    Description: InstanceType used for the Setting up MySql
+    Type: String
+    Default: "t2.micro"
+
+  SSHKey:
+    Description: Secret Key Name
+    Type: String
+    Default: "nomanikram-secretkey"
+
+Resources:
+  BastionHost:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref UbuntuAMI
+      InstanceType: !Ref EC2InstanceType
+      KeyName: !Ref SSHKey
+      SubnetId:
+        Fn::ImportValue:
+          PublicSubnet1a
+      SecurityGroupIds:
+        - Fn::ImportValue:
+            BastionHostSG
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-EC2-BastionHost'
+
+
+Outputs:
+  BastionHostPublicIp:
+    Description: Security Group For Database
+    Value:
+      Fn::GetAtt:
+       - BastionHost
+       - PublicIp
+    Export:
+      Name: BastionHostPublicIp

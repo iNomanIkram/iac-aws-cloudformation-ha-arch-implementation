@@ -1,0 +1,176 @@
+Description: >
+    NomanIkram-CfnAssignment-ROOT-for-Nested-Stack-
+
+Parameters:
+  ProjectName:
+      Description: An environment name that will be prefixed to resource names
+      Type: String
+      Default: "NomanIkram-Cfn-Assignment"
+
+  Environnment:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: "Dev"
+
+
+  Region:
+      Description: Region for the current Assignment
+      Type: String
+      Default: 'us-east-1'
+
+  UbuntuAMI:
+      Description: AMI used for the Setting up MySql
+      Type: String
+      Default: "ami-0ee02acd56a52998e"
+
+  EC2InstanceType:
+      Description: InstanceType used for the Setting up MySql
+      Type: String
+      Default: "t2.micro"
+
+  VPCCidrBlock:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.0/24"
+
+  SubnetCidrBlock1:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.0/27"
+
+  SubnetCidrBlock2:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.32/27"
+  SubnetCidrBlock3:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.64/27"
+
+  SubnetCidrBlock4:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.96/27"
+
+  SubnetCidrBlock5:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.128/27"
+
+  SubnetCidrBlock6:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.160/27"
+
+  SubnetCidrBlock7:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.192/27"
+
+  SubnetCidrBlock8:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.224/27"
+
+  SSHKey:
+      Description: Secret Key Name
+      Type: String
+      Default: "nomanikram-secretkey"
+
+Resources:
+
+  VPCStack:
+    Type: "AWS::CloudFormation::Stack"
+    Properties:
+      TimeoutInMinutes: 5
+      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/vpc-stack.yml
+      Parameters:
+        VPCCidrBlock: !Ref VPCCidrBlock
+        SubnetCidrBlock1: !Ref SubnetCidrBlock1
+        SubnetCidrBlock2: !Ref SubnetCidrBlock2
+        SubnetCidrBlock3: !Ref SubnetCidrBlock3
+        SubnetCidrBlock4: !Ref SubnetCidrBlock4
+        SubnetCidrBlock5: !Ref SubnetCidrBlock5
+        SubnetCidrBlock6: !Ref SubnetCidrBlock6
+        SubnetCidrBlock7: !Ref SubnetCidrBlock7
+        SubnetCidrBlock8: !Ref SubnetCidrBlock8
+        Environnment: !Ref Environnment
+
+  SecurityGroupsStack:
+    Type: "AWS::CloudFormation::Stack"
+    DependsOn: VPCStack
+    Properties:
+      TimeoutInMinutes: 5
+      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/security-group-stack.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environnment: !Ref Environnment
+
+  DatabaseStack:
+    Type: "AWS::CloudFormation::Stack"
+    DependsOn: SecurityGroupsStack
+    Properties:
+      TimeoutInMinutes: 5
+      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/database-stack.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environnment: !Ref Environnment
+        UbuntuAMI: !Ref UbuntuAMI
+        EC2InstanceType: !Ref EC2InstanceType
+        SSHKey: !Ref SSHKey
+
+
+  # LaunchTemplateStack:
+  #   Type: "AWS::CloudFormation::Stack"
+  #   DependsOn: DatabaseStack
+  #   Properties:
+  #     TimeoutInMinutes: 5
+  #     TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/launchtemplate-stack.yml
+  #     Parameters:
+  #       ProjectName: !Ref ProjectName
+  #       UbuntuAMI: !Ref UbuntuAMI
+  #       EC2InstanceType: !Ref EC2InstanceType
+  #       SSHKey: !Ref SSHKey
+
+  BastionHostStack:
+    Type: "AWS::CloudFormation::Stack"
+    DependsOn: ASGStack
+    Properties:
+      TimeoutInMinutes: 5
+      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/bastion-host-stack.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environnment: !Ref Environnment
+        UbuntuAMI: !Ref UbuntuAMI
+        EC2InstanceType: !Ref EC2InstanceType
+        SSHKey: !Ref SSHKey
+
+  ALBStack:
+    Type: "AWS::CloudFormation::Stack"
+    DependsOn: SecurityGroupsStack
+    Properties:
+      TimeoutInMinutes: 5
+      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/application-load-balancer-stack.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environnment: !Ref Environnment
+
+  ASGStack:
+    Type: "AWS::CloudFormation::Stack"
+    DependsOn: ALBStack
+    Properties:
+      TimeoutInMinutes: 5
+      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/autoscaling-group-stack.yml
+      Parameters:
+        ProjectName: !Ref ProjectName
+        Environnment: !Ref Environnment
+
+# Outputs:
+#   LTVersionNumber:
+#     Description: The DNSName of the load balancer
+#     Value:
+#       Fn::ImportValue:
+#         Fn::GetAtt:
+#           FlaskAppLaunchTemplate.LatestVersionNumber
+#     Export:
+#       Name: LTVersionNumber

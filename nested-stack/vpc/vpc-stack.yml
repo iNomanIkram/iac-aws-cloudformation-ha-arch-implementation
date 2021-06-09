@@ -1,0 +1,343 @@
+Description: >
+    NomanIkram-CfnAssignment-Nested-Stack-VPC-Configuration
+
+Parameters:
+  ProjectName:
+      Description: An environment name that will be prefixed to resource names
+      Type: String
+      Default: "NomanIkram-Cfn-Assignment"
+
+  Environnment:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: "Dev"
+
+
+  Region:
+      Description: Region for the current Assignment
+      Type: String
+      Default: 'us-east-1'
+
+  UbuntuAMI:
+      Description: AMI used for the Setting up MySql
+      Type: String
+      Default: "ami-0ee02acd56a52998e"
+
+  EC2InstanceType:
+      Description: InstanceType used for the Setting up MySql
+      Type: String
+      Default: "t2.micro"
+
+  VPCCidrBlock:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.0/24"
+
+  SubnetCidrBlock1:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.0/27"
+
+  SubnetCidrBlock2:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.32/27"
+  SubnetCidrBlock3:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.64/27"
+
+  SubnetCidrBlock4:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.96/27"
+
+  SubnetCidrBlock5:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.128/27"
+
+  SubnetCidrBlock6:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.160/27"
+
+  SubnetCidrBlock7:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.192/27"
+
+  SubnetCidrBlock8:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.224/27"
+
+  SSHKey:
+      Description: Secret Key Name
+      Type: String
+      Default: "nomanikram-secretkey"
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VPCCidrBlock
+      EnableDnsHostnames: True
+      EnableDnsSupport: True
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-VPC'
+
+# Internet Gateway
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName}-${Environnment}-VPC-IGW'
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+# For First AZ
+
+  PublicSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock1
+      AvailabilityZone: "us-east-1a"
+      MapPublicIpOnLaunch: True
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-VPC-PublicSubnet1a'
+
+  PrivateSubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock2
+      AvailabilityZone: "us-east-1a"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-VPC-PrivateSubnet1b'
+
+  PrivateSubnet1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock3
+      AvailabilityZone: "us-east-1a"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-VPC-PrivateSubnet1c'
+
+  PrivateSubnet1d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock4
+      AvailabilityZone: "us-east-1a"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-VPC-PrivateSubnet1d'
+
+
+### For Second AZ
+
+
+  PublicSubnet2a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock5
+      AvailabilityZone: "us-east-1b"
+      MapPublicIpOnLaunch: True
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-VPC-PublicSubnet2a'
+
+  PrivateSubnet2b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock6
+      AvailabilityZone: "us-east-1b"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-VPC-Private Subnet 2b'
+
+  PrivateSubnet2c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock7
+      AvailabilityZone: "us-east-1b"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-VPC-PrivateSubnet2c'
+
+  PrivateSubnet2d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock8
+      AvailabilityZone: "us-east-1b"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-VPC-PrivateSubnet2d'
+
+# Nat Gateway
+  NAT:
+     Type: AWS::EC2::NatGateway
+     Properties:
+        AllocationId:
+           Fn::GetAtt:
+           - EIP
+           - AllocationId
+        SubnetId: !Ref PublicSubnet1a
+        Tags:
+          - Key: Name
+            Value: !Sub '${ProjectName}-${Environnment}-VPC-PublicSubnet1a-NATGateway'
+  EIP:
+     DependsOn: AttachGateway
+     Type: AWS::EC2::EIP
+     Properties:
+        Domain: vpc
+
+# Public RT
+  PublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref VPC
+        Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-VPC-PublicRT'
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGateway
+    Properties:
+       RouteTableId: !Ref PublicRouteTable
+       DestinationCidrBlock: 0.0.0.0/0
+       GatewayId: !Ref InternetGateway
+
+  PublicSubnet1aRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1a
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2aRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2a
+      RouteTableId: !Ref PublicRouteTable
+
+# Private RT
+  PrivateRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref VPC
+        Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-Private RT'
+  Route:
+     Type: AWS::EC2::Route
+     Properties:
+        RouteTableId:
+           Ref: PrivateRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId:
+           Ref: NAT
+
+  PrivateSubnet1bRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1b
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet1cRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1c
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet1dRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1d
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2bRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2b
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2cRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2c
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2dRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2d
+      RouteTableId: !Ref PrivateRouteTable
+
+Outputs:
+  PublicSubnet1a:
+    Description: Public Subnet in AZ 1 Tier 1
+    Value: !Ref PublicSubnet1a
+    Export:
+      Name: PublicSubnet1a
+  PrivateSubnet1b:
+    Description: Private Subnet in AZ 1 Tier 2
+    Value: !Ref PrivateSubnet1b
+    Export:
+      Name: PrivateSubnet1b
+  PrivateSubnet1c:
+    Description: Private Subnet in AZ 1 Tier 3
+    Value: !Ref PrivateSubnet1c
+    Export:
+      Name: PrivateSubnet1c
+
+  PrivateSubnet1d:
+    Description: Private Subnet in AZ 1 Tier 4
+    Value: !Ref PrivateSubnet1d
+    Export:
+      Name: PrivateSubnet1d
+
+  PublicSubnet2a:
+    Description: Public Subnet in AZ 2 Tier 1
+    Value: !Ref PublicSubnet2a
+    Export:
+      Name: PublicSubnet2a
+
+  PrivateSubnet2b:
+    Description: Private Subnet in AZ 2 Tier 2
+    Value: !Ref PrivateSubnet2b
+    Export:
+      Name: PrivateSubnet2b
+  PrivateSubnet2c:
+    Description: Private Subnet in AZ 2 Tier 3
+    Value: !Ref PrivateSubnet1c
+    Export:
+      Name: PrivateSubnet2c
+
+  PrivateSubnet2d:
+    Description: Private Subnet in AZ 2 Tier 4
+    Value: !Ref PrivateSubnet2d
+    Export:
+      Name: PrivateSubnet2d
+
+  VPC:
+    Description: VPC
+    Value: !Ref VPC
+    Export:
+      Name: VPC

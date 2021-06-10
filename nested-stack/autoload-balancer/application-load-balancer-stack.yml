@@ -12,6 +12,25 @@ Parameters:
     Type: String
     Default: "Dev"
 
+  LoadBalancerSG:
+    Description: LoadBalancerSG
+    Type: String
+    Default: "default"
+
+  VPC:
+    Description: VPC
+    Type: String
+    Default: "default"
+
+  PublicSubnet1a:
+    Description: PublicSubnet1a
+    Type: String
+    Default: "default"
+
+  PublicSubnet2a:
+    Description: PublicSubnet2a
+    Type: String
+    Default: "default"
 
 Resources:
 
@@ -26,25 +45,25 @@ Resources:
       Port:  80
       Protocol: HTTP
       UnhealthyThresholdCount: 5
-      VpcId: #!Ref VPC
-        Fn::ImportValue:
-          VPC
+      VpcId: !Ref VPC
+        # Fn::ImportValue:
+        #   VPC
 
   ALB:
     Type: AWS::ElasticLoadBalancingV2::LoadBalancer
     Properties:
       Scheme: 'internet-facing'
       SecurityGroups:
-        #- Ref: LoadBalancerSG
-       - Fn::ImportValue:
-          LoadBalancerSG
+        - Ref: LoadBalancerSG
+       # - Fn::ImportValue:
+       #    LoadBalancerSG
       Subnets:
-        #- Ref: PublicSubnet1a
-        #- Ref: PublicSubnet2a
-        - Fn::ImportValue:
-            PublicSubnet1a
-        - Fn::ImportValue:
-            PublicSubnet2a
+        - Ref: PublicSubnet1a
+        - Ref: PublicSubnet2a
+        # - Fn::ImportValue:
+        #     PublicSubnet1a
+        # - Fn::ImportValue:
+        #     PublicSubnet2a
 
       Type: application
       Tags:

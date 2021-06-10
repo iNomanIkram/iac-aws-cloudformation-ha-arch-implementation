@@ -13,7 +13,7 @@ Parameters:
     Default: "Dev"
 
 
-  UbuntuAMI:
+  InstanceAMI:
     Description: AMI used for the Setting up MySql
     Type: String
     Default: "ami-0ee02acd56a52998e"
@@ -28,19 +28,30 @@ Parameters:
     Type: String
     Default: "nomanikram-secretkey"
 
+  PublicSubnet1a:
+    Description: PublicSubnet1a
+    Type: String
+    Default: "default"
+
+  BastionHostSG:
+    Description: BastionHostSG
+    Type: String
+    Default: "default"
+
 Resources:
   BastionHost:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: !Ref UbuntuAMI
+      ImageId: !Ref InstanceAMI
       InstanceType: !Ref EC2InstanceType
       KeyName: !Ref SSHKey
-      SubnetId:
-        Fn::ImportValue:
-          PublicSubnet1a
+      SubnetId: !Ref PublicSubnet1a
+        # Fn::ImportValue:
+        #   PublicSubnet1a
       SecurityGroupIds:
-        - Fn::ImportValue:
-            BastionHostSG
+        - Ref: BastionHostSG
+        # - Fn::ImportValue:
+        #     BastionHostSG
       Tags:
         - Key: Name
           Value: !Sub '${ProjectName}-${Environnment}-EC2-BastionHost'

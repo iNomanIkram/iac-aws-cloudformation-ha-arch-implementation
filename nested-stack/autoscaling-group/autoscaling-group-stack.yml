@@ -1,0 +1,71 @@
+Description: >
+    NomanIkram-CfnAssignment-Nested-Stack-ASG-Configuration
+
+Parameters:
+  ProjectName:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: "NomanIkram-Cfn-Assignment"
+
+  Environnment:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: "Dev"
+
+  PrivateSubnet1b:
+    Description: PrivateSubnet1b
+    Type: String
+    Default: "default"
+
+  PrivateSubnet2b:
+    Description: PrivateSubnet2b
+    Type: String
+    Default: "default"
+
+  FlaskAppTargetGroup:
+    Description: FlaskAppTargetGroup
+    Type: String
+    Default: "default"
+
+  FlaskAppLaunchTemplate:
+    Description: FlaskAppLaunchTemplate
+    Type: String
+    Default: "default"
+
+  LaunchTemplateVersion:
+    Description: LaunchTemplateVersion
+    Type: String
+    Default: "default"
+
+Resources:
+  FlaskAppASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: 'FlaskAppASG'
+      MinSize: "2"
+      MaxSize: "4"
+      DesiredCapacity: "2"
+      HealthCheckGracePeriod: 300
+      TargetGroupARNs:
+        - Ref : FlaskAppTargetGroup
+        # - Fn::ImportValue:
+        #     FlaskAppTargetGroup
+      LaunchTemplate:
+        LaunchTemplateId: !Ref FlaskAppLaunchTemplate
+          # Fn::ImportValue:
+          #     FlaskAppLaunchTemplate
+        Version: !Ref LaunchTemplateVersion #!GetAtt DatabaseStack.Outputs.FlaskAppLaunchTemplate.LatestVersionNumber
+          # Fn::ImportValue:
+          #   LaunchTemplateVersion
+
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnet1b
+        - !Ref PrivateSubnet2b
+        # - Fn::ImportValue:
+        #     PrivateSubnet1b
+        # - Fn::ImportValue:
+        #     PrivateSubnet2b
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-${Environnment}-ASG-FlaskApp'
+          PropagateAtLaunch: "true"

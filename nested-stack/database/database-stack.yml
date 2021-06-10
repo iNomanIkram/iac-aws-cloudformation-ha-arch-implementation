@@ -13,7 +13,7 @@ Parameters:
     Default: "Dev"
 
 
-  UbuntuAMI:
+  InstanceAMI:
     Description: AMI used for the Setting up MySql
     Type: String
     Default: "ami-0ee02acd56a52998e"
@@ -28,12 +28,27 @@ Parameters:
     Type: String
     Default: "nomanikram-secretkey"
 
+  PrivateSubnet1c:
+    Description: PrivateSubnet1c
+    Type: String
+    Default: "default"
+
+  MySQLSG:
+    Description: MySQLSG
+    Type: String
+    Default: "default"
+
+  FlaskAppSG:
+    Description: FlaskAppSG
+    Type: String
+    Default: "default"
+
 Resources:
 
   MySQLInstance:
     Type: AWS::EC2::Instance
     Properties:
-      ImageId: !Ref UbuntuAMI
+      ImageId: !Ref InstanceAMI
       InstanceType: !Ref EC2InstanceType
       KeyName: !Ref SSHKey
       SubnetId: #!Ref PrivateSubnet1c
@@ -70,7 +85,7 @@ Resources:
     Properties:
       LaunchTemplateName: launchtemplate
       LaunchTemplateData:
-        ImageId: !Ref UbuntuAMI
+        ImageId: !Ref InstanceAMI
         InstanceType: !Ref EC2InstanceType
         KeyName: !Ref SSHKey
         SecurityGroupIds:

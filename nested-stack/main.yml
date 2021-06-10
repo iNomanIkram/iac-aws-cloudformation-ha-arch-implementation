@@ -10,15 +10,14 @@ Parameters:
   Environnment:
     Description: An environment name that will be prefixed to resource names
     Type: String
-    Default: "Dev"
-
+    Default: "dev"
 
   Region:
       Description: Region for the current Assignment
       Type: String
       Default: 'us-east-1'
 
-  UbuntuAMI:
+  InstanceAMI:
       Description: AMI used for the Setting up MySql
       Type: String
       Default: "ami-0ee02acd56a52998e"
@@ -33,41 +32,41 @@ Parameters:
       Type: String
       Default: "10.0.0.0/24"
 
-  SubnetCidrBlock1:
+  PublicSubnetCidrBlock1:
       Description: CIDR Block For VPC
       Type: String
       Default: "10.0.0.0/27"
 
-  SubnetCidrBlock2:
+  PrivateSubnetCidrBlock2:
       Description: CIDR Block For VPC
       Type: String
       Default: "10.0.0.32/27"
-  SubnetCidrBlock3:
+  PrivateSubnetCidrBlock3:
       Description: CIDR Block For VPC
       Type: String
       Default: "10.0.0.64/27"
 
-  SubnetCidrBlock4:
+  PrivateSubnetCidrBlock4:
       Description: CIDR Block For VPC
       Type: String
       Default: "10.0.0.96/27"
 
-  SubnetCidrBlock5:
+  PublicSubnetCidrBlock5:
       Description: CIDR Block For VPC
       Type: String
       Default: "10.0.0.128/27"
 
-  SubnetCidrBlock6:
+  PrivateSubnetCidrBlock6:
       Description: CIDR Block For VPC
       Type: String
       Default: "10.0.0.160/27"
 
-  SubnetCidrBlock7:
+  PrivateSubnetCidrBlock7:
       Description: CIDR Block For VPC
       Type: String
       Default: "10.0.0.192/27"
 
-  SubnetCidrBlock8:
+  PrivateSubnetCidrBlock8:
       Description: CIDR Block For VPC
       Type: String
       Default: "10.0.0.224/27"
@@ -83,17 +82,17 @@ Resources:
     Type: "AWS::CloudFormation::Stack"
     Properties:
       TimeoutInMinutes: 5
-      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/vpc-stack.yml
+      TemplateURL: !Sub https://cfn-assignment-nomanikram.s3.amazonaws.com/${Environnment}/vpc-stack.yml
       Parameters:
         VPCCidrBlock: !Ref VPCCidrBlock
-        SubnetCidrBlock1: !Ref SubnetCidrBlock1
-        SubnetCidrBlock2: !Ref SubnetCidrBlock2
-        SubnetCidrBlock3: !Ref SubnetCidrBlock3
-        SubnetCidrBlock4: !Ref SubnetCidrBlock4
-        SubnetCidrBlock5: !Ref SubnetCidrBlock5
-        SubnetCidrBlock6: !Ref SubnetCidrBlock6
-        SubnetCidrBlock7: !Ref SubnetCidrBlock7
-        SubnetCidrBlock8: !Ref SubnetCidrBlock8
+        PublicSubnetCidrBlock1: !Ref PublicSubnetCidrBlock1
+        PrivateSubnetCidrBlock2: !Ref PrivateSubnetCidrBlock2
+        PrivateSubnetCidrBlock3: !Ref PrivateSubnetCidrBlock3
+        PrivateSubnetCidrBlock4: !Ref PrivateSubnetCidrBlock4
+        PublicSubnetCidrBlock5: !Ref PublicSubnetCidrBlock5
+        PrivateSubnetCidrBlock6: !Ref PrivateSubnetCidrBlock6
+        PrivateSubnetCidrBlock7: !Ref PrivateSubnetCidrBlock7
+        PrivateSubnetCidrBlock8: !Ref PrivateSubnetCidrBlock8
         Environnment: !Ref Environnment
 
   SecurityGroupsStack:
@@ -101,23 +100,28 @@ Resources:
     DependsOn: VPCStack
     Properties:
       TimeoutInMinutes: 5
-      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/security-group-stack.yml
+      TemplateURL: !Sub https://cfn-assignment-nomanikram.s3.amazonaws.com/${Environnment}/security-group-stack.yml
       Parameters:
         ProjectName: !Ref ProjectName
         Environnment: !Ref Environnment
+        VPC: !GetAtt VPCStack.Outputs.VPC
 
   DatabaseStack:
     Type: "AWS::CloudFormation::Stack"
     DependsOn: SecurityGroupsStack
     Properties:
       TimeoutInMinutes: 5
-      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/database-stack.yml
+      TemplateURL: !Sub https://cfn-assignment-nomanikram.s3.amazonaws.com/${Environnment}/database-stack.yml
       Parameters:
         ProjectName: !Ref ProjectName
         Environnment: !Ref Environnment
-        UbuntuAMI: !Ref UbuntuAMI
+        InstanceAMI: !Ref InstanceAMI
         EC2InstanceType: !Ref EC2InstanceType
         SSHKey: !Ref SSHKey
+        PrivateSubnet1c: !GetAtt VPCStack.Outputs.PrivateSubnet1c
+        MySQLSG: !GetAtt SecurityGroupsStack.Outputs.MySQLSG
+        FlaskAppSG: !GetAtt SecurityGroupsStack.Outputs.FlaskAppSG
+
 
 
   # LaunchTemplateStack:
@@ -128,42 +132,55 @@ Resources:
   #     TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/launchtemplate-stack.yml
   #     Parameters:
   #       ProjectName: !Ref ProjectName
-  #       UbuntuAMI: !Ref UbuntuAMI
+  #       InstanceAMI: !Ref InstanceAMI
   #       EC2InstanceType: !Ref EC2InstanceType
   #       SSHKey: !Ref SSHKey
 
   BastionHostStack:
     Type: "AWS::CloudFormation::Stack"
-    DependsOn: ASGStack
+    # DependsOn: ASGStack
     Properties:
       TimeoutInMinutes: 5
-      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/bastion-host-stack.yml
+      TemplateURL: !Sub  https://cfn-assignment-nomanikram.s3.amazonaws.com/${Environnment}/bastion-host-stack.yml
       Parameters:
         ProjectName: !Ref ProjectName
         Environnment: !Ref Environnment
-        UbuntuAMI: !Ref UbuntuAMI
+        InstanceAMI: !Ref InstanceAMI
         EC2InstanceType: !Ref EC2InstanceType
         SSHKey: !Ref SSHKey
+        PublicSubnet1a: !GetAtt VPCStack.Outputs.PublicSubnet1a
+        BastionHostSG: !GetAtt SecurityGroupsStack.Outputs.BastionHostSG
 
   ALBStack:
     Type: "AWS::CloudFormation::Stack"
     DependsOn: SecurityGroupsStack
     Properties:
       TimeoutInMinutes: 5
-      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/application-load-balancer-stack.yml
+      TemplateURL: !Sub  https://cfn-assignment-nomanikram.s3.amazonaws.com/${Environnment}/application-load-balancer-stack.yml
       Parameters:
         ProjectName: !Ref ProjectName
         Environnment: !Ref Environnment
+        LoadBalancerSG: !GetAtt SecurityGroupsStack.Outputs.LoadBalancerSG
+        VPC: !GetAtt VPCStack.Outputs.VPC
+        PublicSubnet1a: !GetAtt VPCStack.Outputs.PublicSubnet1a
+        PublicSubnet2a: !GetAtt VPCStack.Outputs.PublicSubnet2a
 
   ASGStack:
     Type: "AWS::CloudFormation::Stack"
     DependsOn: ALBStack
     Properties:
       TimeoutInMinutes: 5
-      TemplateURL: https://cfn-assignment-nomanikram.s3.amazonaws.com/autoscaling-group-stack.yml
+      TemplateURL: !Sub https://cfn-assignment-nomanikram.s3.amazonaws.com/${Environnment}/autoscaling-group-stack.yml
       Parameters:
         ProjectName: !Ref ProjectName
         Environnment: !Ref Environnment
+        PrivateSubnet1b: !GetAtt VPCStack.Outputs.PrivateSubnet1b
+        PrivateSubnet2b: !GetAtt VPCStack.Outputs.PrivateSubnet2b
+        FlaskAppTargetGroup:  !GetAtt ALBStack.Outputs.FlaskAppTargetGroup
+        FlaskAppLaunchTemplate: !GetAtt DatabaseStack.Outputs.FlaskAppLaunchTemplate
+        LaunchTemplateVersion: !GetAtt  DatabaseStack.Outputs.LaunchTemplateVersion
+
+
 
 # Outputs:
 #   LTVersionNumber:

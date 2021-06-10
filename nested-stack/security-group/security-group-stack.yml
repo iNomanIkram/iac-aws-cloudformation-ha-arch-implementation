@@ -10,16 +10,20 @@ Parameters:
   Environnment:
     Description: An environment name that will be prefixed to resource names
     Type: String
-    Default: "Dev"
+    Default: "VPC"
 
+  VPC:
+    Description: An environment name that will be prefixed to resource names
+    Type: String
+    Default: ""
 Resources:
     MySQLSG:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: Allow incoming request on port 3306/22 from web security group
-        VpcId: #!Ref VPC
-          Fn::ImportValue:
-            VPC
+        VpcId: !Ref VPC
+          # Fn::ImportValue:
+          #   VPC
         SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 3306
@@ -42,9 +46,9 @@ Resources:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: Allow http to our hosts and SSH from local only
-        VpcId: #!Ref VPC
-          Fn::ImportValue:
-            VPC
+        VpcId: !Ref VPC
+          # Fn::ImportValue:
+          #   VPC
         SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -75,9 +79,9 @@ Resources:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: Allow http to our hosts
-        VpcId: #!Ref VPC
-          Fn::ImportValue:
-            VPC
+        VpcId: !Ref VPC
+          # Fn::ImportValue:
+          #   VPC
         SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80
@@ -96,9 +100,9 @@ Resources:
       Type: AWS::EC2::SecurityGroup
       Properties:
         GroupDescription: Allow http requests to our hosts and SSH from local only
-        VpcId: #!Ref VPC
-          Fn::ImportValue:
-            VPC
+        VpcId: !Ref VPC
+          # Fn::ImportValue:
+          #   VPC
         SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 80

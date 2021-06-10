@@ -1,4 +1,4 @@
-# Deploy a High-Availability Web Application Using AWS CloudFormation - IaaS 
+# Deploy a High-Availability Flask Application Using AWS CloudFormation - IaaS 
 
 
 Infrastructure-as-code (IAC) that automates the process of creating a secured and high-availability environment and deploying an application (python flask app) on ec2 instance. The script contains all the configurations needed for a repeatable process so that the infrastructure can be discarded and recreated at will multiple times.
@@ -28,7 +28,7 @@ Infrastructure-as-code (IAC) that automates the process of creating a secured an
 11. Entire environment is fully virtualized in a cloud platform that can be taken down and brought back up within a short period of time. The process of creating and starting all the services, spinning up instances are automated via scripts in this repo.
 
 **Detailed Infrastructure Architecture**
-![GitHub Logo](https://github.com/iNomanIkram/IaaS-HighlyAvailableWebApp-CloudFormation/blob/master/amazon.png)
+![GitHub Logo](https://github.com/iNomanIkram/iac-aws-cloudformation-ha-arch-implementation/blob/main/infra.png)
 
 **Prerequisites**
 1. Make sure you have all setup an AWS account.
@@ -38,5 +38,5 @@ Infrastructure-as-code (IAC) that automates the process of creating a secured an
 
 **Steps**
 1. Clone the git repository.
-2. There is one components to standing up our environment in AWS: infra.yml incase of single stack and root-stack.yml incase of multiple stack. Infrastructure are the VPCs, gateways, subnets, and routing. Servers are the compute resources, load-balancers, and auto-scaling.
+2. There is one components to standing up our environment in AWS: `infra.yml` incase of single stack and `root-stack.yml` incase of multiple stack. Infrastructure are the VPCs, gateways, subnets, and routing. Servers are the compute resources, load-balancers, and auto-scaling.
 

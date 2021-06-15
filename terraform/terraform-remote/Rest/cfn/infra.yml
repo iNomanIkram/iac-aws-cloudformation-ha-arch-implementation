@@ -1,0 +1,527 @@
+Description: >
+    NomanIkram-CfnAssignment-Single Stack
+
+Parameters:
+  ProjectName:
+      Description: An environment name that will be prefixed to resource names
+      Type: String
+      Default: "NomanIkram-Cfn-Assignment"
+
+  Region:
+      Description: Region for the current Assignment
+      Type: String
+      Default: 'us-east-1'
+
+  UbuntuAMI:
+      Description: AMI used for the Setting up MySql
+      Type: String
+      Default: "ami-0ee02acd56a52998e"
+
+  EC2InstanceType:
+      Description: InstanceType used for the Setting up MySql
+      Type: String
+      Default: "t2.micro"
+
+  VPCCidrBlock:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.0/24"
+
+  SubnetCidrBlock1:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.0/27"
+
+  SubnetCidrBlock2:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.32/27"
+  SubnetCidrBlock3:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.64/27"
+
+  SubnetCidrBlock4:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.96/27"
+
+  SubnetCidrBlock5:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.128/27"
+
+  SubnetCidrBlock6:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.160/27"
+
+  SubnetCidrBlock7:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.192/27"
+
+  SubnetCidrBlock8:
+      Description: CIDR Block For VPC
+      Type: String
+      Default: "10.0.0.224/27"
+
+  SSHKey:
+      Description: Secret Key Name
+      Type: String
+      Default: "nomanikram-secretkey"
+
+
+Resources:
+  VPC:
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VPCCidrBlock
+      EnableDnsHostnames: True
+      EnableDnsSupport: True
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName} | VPC'
+
+# Internet Gateway
+  InternetGateway:
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+      - Key: Name
+        Value: !Sub '${ProjectName} | VPC | IGW'
+
+  AttachGateway:
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      VpcId: !Ref VPC
+      InternetGatewayId: !Ref InternetGateway
+
+# For First AZ
+
+  PublicSubnet1a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock1
+      AvailabilityZone: "us-east-1a"
+      MapPublicIpOnLaunch: True
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-PublicSubnet1a'
+
+  PrivateSubnet1b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock2
+      AvailabilityZone: "us-east-1a"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-PrivateSubnet1b'
+
+  PrivateSubnet1c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock3
+      AvailabilityZone: "us-east-1a"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-PrivateSubnet1c'
+
+  PrivateSubnet1d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock4
+      AvailabilityZone: "us-east-1a"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-PrivateSubnet1d'
+
+
+### For Second AZ
+
+
+  PublicSubnet2a:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock5
+      AvailabilityZone: "us-east-1b"
+      MapPublicIpOnLaunch: True
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-PublicSubnet2a'
+
+  PrivateSubnet2b:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock6
+      AvailabilityZone: "us-east-1b"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-Private Subnet 2b'
+
+  PrivateSubnet2c:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock7
+      AvailabilityZone: "us-east-1b"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-PrivateSubnet2c'
+
+  PrivateSubnet2d:
+    Type: AWS::EC2::Subnet
+    Properties:
+      VpcId: !Ref VPC
+      CidrBlock: !Ref SubnetCidrBlock8
+      AvailabilityZone: "us-east-1b"
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-PrivateSubnet2d'
+
+# Nat Gateway
+  NAT:
+     Type: AWS::EC2::NatGateway
+     Properties:
+        AllocationId:
+           Fn::GetAtt:
+           - EIP
+           - AllocationId
+        SubnetId: !Ref PublicSubnet1a
+        Tags:
+          - Key: Name
+            Value: !Sub '${ProjectName}-VPC-PublicSubnet1a-NATGateway'
+  EIP:
+     DependsOn: AttachGateway
+     Type: AWS::EC2::EIP
+     Properties:
+        Domain: vpc
+
+# Public RT
+  PublicRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref VPC
+        Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-PublicRT'
+
+  DefaultPublicRoute:
+    Type: AWS::EC2::Route
+    DependsOn: InternetGateway
+    Properties:
+       RouteTableId: !Ref PublicRouteTable
+       DestinationCidrBlock: 0.0.0.0/0
+       GatewayId: !Ref InternetGateway
+
+  PublicSubnet1aRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet1a
+      RouteTableId: !Ref PublicRouteTable
+
+  PublicSubnet2aRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PublicSubnet2a
+      RouteTableId: !Ref PublicRouteTable
+
+# Private RT
+  PrivateRouteTable:
+      Type: AWS::EC2::RouteTable
+      Properties:
+        VpcId: !Ref VPC
+        Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-VPC-Private RT'
+  Route:
+     Type: AWS::EC2::Route
+     Properties:
+        RouteTableId:
+           Ref: PrivateRouteTable
+        DestinationCidrBlock: 0.0.0.0/0
+        NatGatewayId:
+           Ref: NAT
+
+  PrivateSubnet1bRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1b
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet1cRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1c
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet1dRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet1d
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2bRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2b
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2cRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2c
+      RouteTableId: !Ref PrivateRouteTable
+
+  PrivateSubnet2dRTAssociation:
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      SubnetId: !Ref PrivateSubnet2d
+      RouteTableId: !Ref PrivateRouteTable
+
+  MySQLSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow incoming request on port 3306/22 from web security group
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 3306
+        ToPort: 3306
+        SourceSecurityGroupId: !Ref FlaskAppSG
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        SourceSecurityGroupId: !Ref FlaskAppSG
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-SecurityGroup-MySQLDatabase'
+
+  FlaskAppSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to our hosts and SSH from local only
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        SourceSecurityGroupId: !Ref LoadBalancerSG
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        SourceSecurityGroupId: !Ref LoadBalancerSG
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        SourceSecurityGroupId: !Ref BastionHostSG
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        SourceSecurityGroupId: !Ref BastionHostSG
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-SecurityGroup-FlaskApp'
+
+  LoadBalancerSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http to our hosts
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-SecurityGroup-LoadBalancer'
+
+  BastionHostSG:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Allow http requests to our hosts and SSH from local only
+      VpcId: !Ref VPC
+      SecurityGroupIngress:
+      - IpProtocol: tcp
+        FromPort: 80
+        ToPort: 80
+        CidrIp: 0.0.0.0/0
+      - IpProtocol: tcp
+        FromPort: 22
+        ToPort: 22
+        CidrIp: 0.0.0.0/0
+      SecurityGroupEgress:
+      - IpProtocol: tcp
+        FromPort: 0
+        ToPort: 65535
+        CidrIp: 0.0.0.0/0
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-SecurityGroup-BastionHost'
+
+  MySQLInstance:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref UbuntuAMI
+      InstanceType: !Ref EC2InstanceType
+      KeyName: !Ref SSHKey
+      SubnetId: !Ref PrivateSubnet1c
+      SecurityGroupIds:
+        - Ref: MySQLSG
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash -xe
+          DBName='demo'
+          DBUser='nomanikram'
+          DBPassword='secret'
+          DBRootPassword='rsecret'
+          apt update -y
+          apt install -y mariadb-server # wget
+          service mysql start
+          mysqladmin -u root password $DBRootPassword
+          mysql -u root --password=$DBRootPassword
+          echo "CREATE DATABASE $DBName;" >> /tmp/db.setup
+          echo "CREATE USER '$DBUser'@'%' IDENTIFIED BY '$DBPassword';" >> /tmp/db.setup
+          echo "GRANT ALL ON $DBName.* TO '$DBUser'@'%';" >> /tmp/db.setup
+          echo "FLUSH PRIVILEGES;" >> /tmp/db.setup
+          mysql -u root --password=$DBRootPassword < /tmp/db.setup
+          sed -i "s/.*bind-address.*/bind-address = 0.0.0.0/" /etc/mysql/mariadb.conf.d/50-server.cnf
+          service mysql restart
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-EC2-MySqlDB'
+
+
+  BastionHost:
+    Type: AWS::EC2::Instance
+    Properties:
+      ImageId: !Ref UbuntuAMI
+      InstanceType: !Ref EC2InstanceType
+      KeyName: !Ref SSHKey
+      SubnetId: !Ref PublicSubnet1a
+      SecurityGroupIds:
+        - Ref: BastionHostSG
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-EC2-BastionHost'
+
+
+  FlaskAppLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties:
+      LaunchTemplateName: !Sub 'launchtemplate'
+      LaunchTemplateData:
+        ImageId: !Ref UbuntuAMI
+        InstanceType: !Ref EC2InstanceType
+        KeyName: !Ref SSHKey
+        SecurityGroupIds:
+          - Ref: FlaskAppSG
+        UserData:
+          Fn::Base64: !Sub |
+            #!/bin/bash
+            export DB_HOST="${MySQLInstance.PrivateIp}"
+            add-apt-repository ppa:deadsnakes/ppa -y
+            apt update -y
+            git clone https://github.com/iNomanIkram/demo_flask_mariadb
+            apt update
+            apt install python3.9 -y
+            cd demo_flask_mariadb
+            apt-get install python3.9-venv -y
+            python3.9 -m venv venv
+            curl  https://bootstrap.pypa.io/pip/2.7/get-pip.py -o get-pip.py
+            python3.9 get-pip.py
+            source venv/bin/activate
+            python3.9 -m pip install --upgrade pip
+            pip install flask flask-restful mysql-connector-python
+            python3.9 app.py
+        # Tags:
+        #   - Key: Name
+        #     Value: !Sub 'NomanIkram-LaunchTemplate-FlaskApp'
+
+  FlaskAppASG:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AutoScalingGroupName: 'FlaskAppASG'
+      MinSize: "2"
+      MaxSize: "4"
+      DesiredCapacity: "2"
+      HealthCheckGracePeriod: 300
+      TargetGroupARNs:
+        - Ref : FlaskAppTargetGroup
+      LaunchTemplate:
+        LaunchTemplateId: !Ref FlaskAppLaunchTemplate
+        Version: !GetAtt FlaskAppLaunchTemplate.LatestVersionNumber
+      VPCZoneIdentifier:
+        - !Ref PrivateSubnet1b
+        - !Ref PrivateSubnet2b
+      Tags:
+        - Key: Name
+          Value: !Sub '${ProjectName}-ASG-FlaskApp'
+          PropagateAtLaunch: "true"
+
+  FlaskAppTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 10
+      HealthCheckPath: /
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 8
+      HealthyThresholdCount: 2
+      Port:  80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 5
+      VpcId: !Ref VPC
+
+  ALB:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Scheme: 'internet-facing'
+      SecurityGroups:
+        - Ref: LoadBalancerSG
+      Subnets:
+        - Ref: PublicSubnet1a
+        - Ref: PublicSubnet2a
+      Type: application
+      Tags:
+        - Key: Name
+          Value: !Sub 'NomanIkram-FlaskApp-ALB'
+
+  Listener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions:
+      - Type: forward
+        TargetGroupArn:
+          Ref: FlaskAppTargetGroup
+      LoadBalancerArn: !Ref ALB
+      Port: '80'
+      Protocol: HTTP
+
+Outputs:
+  AbAddress:
+    Description: The DNSName of the load balancer
+    Value: !Join [ "", [ "http://", !GetAtt ALB.DNSName ]]
+    Export:
+      Name: !Sub '${ProjectName}-LB-DNS-Link'

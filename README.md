@@ -19,9 +19,9 @@ Infrastructure-as-code (IAC) that automates the process of creating a secured an
 
 7. Sample application code is packaged and stored in an S3 bucket with IAM permissions.
 
-8. Application servers are configured with IAM instance profile to be able to access and download application code from AWS S3 bucket.
+<!-- 8. Application servers are configured with IAM instance profile to be able to access and download application code from AWS S3 bucket. -->
 
-9. Application code is deployed in a apache web server for added security and isolation.
+9. Application code is deployed in a web server for added security and isolation.
 
 10. Health checks and thresholds are defined to aid in system availability detection. Metrics are collected, aggregated, and monitored via AWS CloudWatch.
 
@@ -33,7 +33,7 @@ Infrastructure-as-code (IAC) that automates the process of creating a secured an
 **Prerequisites**
 1. Make sure you have all setup an AWS account.
 2. AWS cli is install and configured.
-3. Create an S3 storage in your AWS account and replace the url for nested stacks. 
+<!-- 3. Create an S3 storage in your AWS account and replace the url for nested stacks.  -->
 <!--4. Besure to change the name of **bucket** in s3 url of **UserData** in servers.yml file.-->
 
 **Steps**
